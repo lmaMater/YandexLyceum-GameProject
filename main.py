@@ -23,7 +23,7 @@ class Player(pygame.sprite.Sprite):
         super().__init__(group)
         self.width = width
         self.height = height
-        img = pygame.transform.scale(Player.image, (50, 50))
+        img = pygame.transform.scale(Player.image, (70, 70))
         self.image = img
         self.rect = self.image.get_rect()
         self.velocity = 0.
@@ -32,17 +32,26 @@ class Player(pygame.sprite.Sprite):
         self.rect.y = 200
 
     def update(self):
-        if self.height > self.rect.y + self.velocity > 0:
-            self.rect.x = 50
+        if self.height - 70 > self.rect.y + self.velocity >= 0:
+            self.rect.x = 100
             self.rect.y = self.rect.y + self.velocity
-            self.velocity += 1
         else:
-            if self.rect.y + self.velocity <= 0:
-                velocity = 0
+            if self.rect.y + self.velocity < 0:
+                self.rect.y = 0
+            if self.height - 70 <= self.rect.y + self.velocity:
+                self.rect.y = self.height - 60
+            self.velocity = 0
+        self.velocity += 1
 
 
 class Obstacle(pygame.sprite.Sprite):
-    pass
+    image_1 = load_image("meteorite_1")
+    image_2 = load_image("meteorite_2")
+
+    def __init__(self, group, width, height):
+        super().__init__(group)
+        self.width = width
+        self.height = height
 
 
 class Game:
@@ -58,7 +67,7 @@ class Game:
         self.player.update()
 
     def click(self):
-        self.player.velocity = -20
+        self.player.velocity = -15
 
 
 if __name__ == '__main__':
@@ -66,7 +75,7 @@ if __name__ == '__main__':
     height = 500
     pygame.init()
     clock = pygame.time.Clock()
-    pygame.display.set_caption('Game')
+    pygame.display.set_caption('Cosmos')
     screen = pygame.display.set_mode((width, height))
     running = True
     GAME_FONT = pygame.freetype.SysFont('calibri', 14)
