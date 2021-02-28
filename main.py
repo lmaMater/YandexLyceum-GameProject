@@ -45,8 +45,8 @@ class Player(pygame.sprite.Sprite):
 
 
 class Obstacle(pygame.sprite.Sprite):
-    image_1 = load_image("meteorite_1")
-    image_2 = load_image("meteorite_2")
+    image_1 = load_image("meteorite_1.png")
+    image_2 = load_image("meteorite_2.png")
 
     def __init__(self, group, width, height):
         super().__init__(group)
@@ -61,18 +61,44 @@ class Game:
         self.player_group = pygame.sprite.Group()
         self.player = Player(self.player_group, width, height)
         self.obstacles = list()
+        self.background_group = pygame.sprite.Group()
+        self.backgrounds = [pygame.sprite.Sprite(self.background_group),
+                            pygame.sprite.Sprite(self.background_group)]
+        self.init_background()
+
+    def init_background(self):
+        image = load_image("background.jpg")
+        self.backgrounds[0].rect = image.get_rect()
+        self.backgrounds[0].rect.x = 0
+        self.backgrounds[0].rect.y = 0
+        self.backgrounds[0].image = image
+        self.backgrounds[1].rect = image.get_rect()
+        self.backgrounds[1].rect.x = 745
+        self.backgrounds[1].rect.y = 0
+        self.backgrounds[1].image = image
 
     def render(self):
-        self.player_group.draw(screen)
         self.player.update()
+        self.move_background()
+
+        self.background_group.draw(screen)
+        self.player_group.draw(screen)
 
     def click(self):
         self.player.velocity = -15
 
+    def move_background(self):
+        self.backgrounds[0].rect.x = self.backgrounds[0].rect.x - 10
+        self.backgrounds[1].rect.x = self.backgrounds[1].rect.x - 10
+        if self.backgrounds[0].rect.x <= -745:
+            self.backgrounds[0].rect.x = 500
+        if self.backgrounds[1].rect.x <= -745:
+            self.backgrounds[1].rect.x = 500
+
 
 if __name__ == '__main__':
     width = 500
-    height = 500
+    height = 392
     pygame.init()
     clock = pygame.time.Clock()
     pygame.display.set_caption('Cosmos')
