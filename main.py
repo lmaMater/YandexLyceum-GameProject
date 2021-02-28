@@ -67,7 +67,7 @@ class Game:
         self.init_background()
 
     def init_background(self):
-        image = load_image("background.jpg")
+        image = load_image("background.png")
         self.backgrounds[0].rect = image.get_rect()
         self.backgrounds[0].rect.x = 0
         self.backgrounds[0].rect.y = 0
@@ -88,8 +88,8 @@ class Game:
         self.player.velocity = -15
 
     def move_background(self):
-        self.backgrounds[0].rect.x = self.backgrounds[0].rect.x - 10
-        self.backgrounds[1].rect.x = self.backgrounds[1].rect.x - 10
+        self.backgrounds[0].rect.x = self.backgrounds[0].rect.x - 8
+        self.backgrounds[1].rect.x = self.backgrounds[1].rect.x - 8
         if self.backgrounds[0].rect.x <= -745:
             self.backgrounds[0].rect.x = 500
         if self.backgrounds[1].rect.x <= -745:
