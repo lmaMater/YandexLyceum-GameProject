@@ -30,6 +30,7 @@ class Player(pygame.sprite.Sprite):
         self.position = 250
         self.rect.x = 100
         self.rect.y = 200
+        self.mask = pygame.mask.from_surface(self.image)
 
     def update(self):
         if self.height - 70 > self.rect.y + self.velocity >= 0:
@@ -47,24 +48,17 @@ class Player(pygame.sprite.Sprite):
 
 class Obstacle(pygame.sprite.Sprite):
     image_1 = load_image("meteorite_1.png")
-    image_2 = load_image("meteorite_2.png")
 
     def __init__(self, group, width, height):
         super().__init__(group)
         self.width = width
         self.height = height
-        self.meteorite_type = randint(0, 2)
-        if self.meteorite_type:
-            self.image = pygame.transform.scale(Obstacle.image_1, (382, 150))
-            self.rect = self.image.get_rect()
-            self.y_pos = randint(height // 2, height - self.rect.height)
-            self.rect.y = self.y_pos
-        else:
-            self.image = pygame.transform.scale(Obstacle.image_2, (382, 150))
-            self.rect = self.image.get_rect()
-            self.y_pos = randint(0, height // 2)
-            self.rect.y = self.y_pos
+        self.image = pygame.transform.scale(Obstacle.image_1, (382, 150))
+        self.rect = self.image.get_rect()
+        self.y_pos = randint(0, height - self.rect.height)
+        self.rect.y = self.y_pos
         self.rect.x = 600
+        self.mask = pygame.mask.from_surface(self.image)
 
     def move(self):
         self.rect.x = self.rect.x - 12
@@ -102,7 +96,7 @@ class Game:
         self.init_background()
 
     def init_background(self):
-        image = load_image("background_3.png")
+        image = load_image("background.png")
         self.img_wdh = image.get_rect().width
         self.backgrounds[0].rect = image.get_rect()
         self.backgrounds[0].rect.x = 0
@@ -146,6 +140,8 @@ class Game:
             if obstacle.is_active():
                 obstacle.move()
                 new_obstacles.append(obstacle)
+            if pygame.sprite.collide_mask(obstacle, self.player):
+                self.stop()
         self.obstacles = new_obstacles.copy()
 
     def add_obstacle(self):
@@ -164,6 +160,8 @@ if __name__ == '__main__':
     GAME_FONT = pygame.freetype.SysFont('calibri', 14)
     game = Game(width, height)
     game.render()
+    CREATE_OBSTACLE_EVENT = pygame.USEREVENT + 1
+    pygame.time.set_timer(CREATE_OBSTACLE_EVENT, 1200)
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -176,6 +174,8 @@ if __name__ == '__main__':
                 if event.button == 3:   # надо сделать чтобы экран вылазил
                     game.stop()         # и там по кнопкам это настроить
             if event.type == pygame.MOUSEWHEEL:
+                game.add_obstacle()
+            if event.type == CREATE_OBSTACLE_EVENT:
                 game.add_obstacle()
         game.update()
         pygame.display.flip()
