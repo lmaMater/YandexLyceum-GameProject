@@ -36,6 +36,9 @@ class Player(pygame.sprite.Sprite):
             self.rect.x = 50
             self.rect.y = self.rect.y + self.velocity
             self.velocity += 1
+        else:
+            if self.rect.y + self.velocity <= 0:
+                velocity = 0
 
 
 class Obstacle(pygame.sprite.Sprite):
