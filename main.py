@@ -1,16 +1,190 @@
-# This is a sample Python script.
-
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
-
-
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
+import pygame
+import pygame.freetype
+import os
+import sys
+from random import randint
+from copy import deepcopy
 
 
-# Press the green button in the gutter to run the script.
+def load_image(name, colorkey=None):
+    fullname = os.path.join('pygame_data', name)
+    # если файл не существует, то выходим
+    if not os.path.isfile(fullname):
+        print(f"Файл с изображением '{fullname}' не найден")
+        sys.exit()
+    image = pygame.image.load(fullname)
+    return image
+
+
+class Player(pygame.sprite.Sprite):
+    image = load_image("ufo.png")
+
+    def __init__(self, group, width, height):
+        super().__init__(group)
+        self.width = width
+        self.height = height
+        img = pygame.transform.scale(Player.image, (70, 70))
+        self.image = img
+        self.rect = self.image.get_rect()
+        self.velocity = 0
+        self.position = 250
+        self.rect.x = 100
+        self.rect.y = 200
+        self.mask = pygame.mask.from_surface(self.image)
+
+    def update(self):
+        if self.height - 70 > self.rect.y + self.velocity >= 0:
+            self.rect.x = 100
+            self.rect.y = self.rect.y + self.velocity
+        else:
+            if self.rect.y + self.velocity < 0:
+                self.rect.y = 0
+            if self.height - 70 <= self.rect.y + self.velocity:
+                self.rect.y = self.height - 60
+            self.velocity = 0
+        if self.velocity <= 20:
+            self.velocity += 1
+
+
+class Obstacle(pygame.sprite.Sprite):
+    image_1 = load_image("meteorite_1.png")
+
+    def __init__(self, group, width, height):
+        super().__init__(group)
+        self.width = width
+        self.height = height
+        self.image = pygame.transform.scale(Obstacle.image_1, (382, 150))
+        self.rect = self.image.get_rect()
+        self.y_pos = randint(0, height - self.rect.height)
+        self.rect.y = self.y_pos
+        self.rect.x = 600
+        self.mask = pygame.mask.from_surface(self.image)
+
+    def move(self):
+        self.rect.x = self.rect.x - 12
+
+    def is_active(self):
+        if self.rect.x + self.rect.width < 0:
+            return False
+        return True
+
+
+class Game:
+    def __init__(self, width, height):
+        self.is_running = False
+        self.width = width
+        self.height = height
+        self.player_group = pygame.sprite.Group()
+        self.player = Player(self.player_group, width, height)
+        self.obstacles = list()
+        self.obstacles_group = pygame.sprite.Group()
+        self.background_group = pygame.sprite.Group()
+        self.backgrounds = [pygame.sprite.Sprite(self.background_group),
+                            pygame.sprite.Sprite(self.background_group)]
+        self.init_background()
+        self.score = 0
+        self.render()
+
+    def reset(self):
+        self.is_running = True
+        self.player_group = pygame.sprite.Group()
+        self.player = Player(self.player_group, width, height)
+        self.obstacles = list()
+        self.obstacles_group = pygame.sprite.Group()
+        self.background_group = pygame.sprite.Group()
+        self.backgrounds = [pygame.sprite.Sprite(self.background_group),
+                            pygame.sprite.Sprite(self.background_group)]
+        self.score = 0
+        self.init_background()
+
+    def init_background(self):
+        image = load_image("background.png")
+        self.img_wdh = image.get_rect().width
+        self.backgrounds[0].rect = image.get_rect()
+        self.backgrounds[0].rect.x = 0
+        self.backgrounds[0].rect.y = 0
+        self.backgrounds[0].image = image
+        self.backgrounds[1].rect = image.get_rect()
+        self.backgrounds[1].rect.x = self.img_wdh
+        self.backgrounds[1].rect.y = 0
+        self.backgrounds[1].image = image
+
+    def update(self):
+        if self.is_running:
+            self.player.update()
+            self.move_background()
+            self.update_obstacles()
+
+            self.render()
+
+    def stop(self):
+        self.is_running = False
+
+    def render(self):
+        self.background_group.draw(screen)
+        self.player_group.draw(screen)
+        self.obstacles_group.draw(screen)
+        textsurface = pygame.font.SysFont('calibri', 25, bold=True).render(f'SCORE: {self.score}',
+                                                                True,
+                                                                (204, 204, 204))
+        pygame.Surface.blit(screen, textsurface, (300, 10))
+
+    def click(self):
+        self.player.velocity = -12
+
+    def move_background(self):
+        self.backgrounds[0].rect.x = self.backgrounds[0].rect.x - 10
+        self.backgrounds[1].rect.x = self.backgrounds[1].rect.x - 10
+        if self.backgrounds[0].rect.x < -self.img_wdh:
+            self.backgrounds[0].rect.x = self.img_wdh - 1
+        if self.backgrounds[1].rect.x < -self.img_wdh:
+            self.backgrounds[1].rect.x = self.img_wdh - 1
+
+    def update_obstacles(self):
+        new_obstacles = list()
+        for obstacle in self.obstacles:
+            if obstacle.is_active():
+                obstacle.move()
+                new_obstacles.append(obstacle)
+            if pygame.sprite.collide_mask(obstacle, self.player):
+                self.stop()
+            if abs(obstacle.rect.x - self.player.rect.x + 1) <= 6:
+                self.score += 1
+        self.obstacles = new_obstacles.copy()
+
+    def add_obstacle(self):
+        obstacle = Obstacle(self.obstacles_group, self.width, self.height)
+        self.obstacles.append(obstacle)
+
+
 if __name__ == '__main__':
-    print_hi('PyCharm')
-
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+    width = 500
+    height = 500
+    pygame.init()
+    clock = pygame.time.Clock()
+    pygame.display.set_caption('Cosmos')
+    screen = pygame.display.set_mode((width, height), vsync=1)
+    running = True
+    game_font = pygame.freetype.SysFont('calibri', 14)
+    game = Game(width, height)
+    game.render()
+    CREATE_OBSTACLE_EVENT = pygame.USEREVENT + 1
+    pygame.time.set_timer(CREATE_OBSTACLE_EVENT, 1200)
+    while running:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if event.button == 1:
+                    game.click()
+                if event.button == 2:   # Сделал функции сброса и остановки
+                    game.reset()        # Работают пока на кнопки мыши,
+                if event.button == 3:   # надо сделать чтобы экран вылазил
+                    game.stop()         # и там по кнопкам это настроить
+            if event.type == pygame.MOUSEWHEEL:
+                game.add_obstacle()
+            if event.type == CREATE_OBSTACLE_EVENT:
+                game.add_obstacle()
+        game.update()
+        pygame.display.flip()
+        clock.tick(30)
