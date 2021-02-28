@@ -90,9 +90,9 @@ class Game:
     def move_background(self):
         self.backgrounds[0].rect.x = self.backgrounds[0].rect.x - 8
         self.backgrounds[1].rect.x = self.backgrounds[1].rect.x - 8
-        if self.backgrounds[0].rect.x <= -745:
+        if self.backgrounds[0].rect.x <= -1024:
             self.backgrounds[0].rect.x = 500
-        if self.backgrounds[1].rect.x <= -745:
+        if self.backgrounds[1].rect.x <= -1024:
             self.backgrounds[1].rect.x = 500
 
 
