@@ -52,32 +52,35 @@ class Menu:
             pygame.draw.rect(source, color, (btn[0] + btn[1]))
             source.blit(text, (text_x + btn[0][0], text_y + btn[0][1]))
 
-    def menu(self, source):
+    def menu(self, source, events):
         pos = pygame.mouse.get_pos()
         for index, btn in enumerate(self.buttons):
             n = cursor_on(index, btn, pos)[0]
             self.render(source, n)
 
-        for event in pygame.event.get():
+        for event in events:
             if event.type == pygame.QUIT:
                 sys.exit()
             if event.type == pygame.MOUSEBUTTONDOWN:
                 for index, btn in enumerate(self.buttons):
                     n = cursor_on(index, btn, pos)[1]
-                    print(n)
                     if n:
+                        global status, game
                         if n == 'Quit':
                             sys.exit()
                         if n == 'Start Game':
-                            pass
+                            game.reset()
+                            status = 1
                         if n == 'Main Menu':
-                            pass
+                            status = 0
+                            game.render()
                         if n == 'Pause':
                             pass
                         if n == 'Continue':
                             pass
                         if n == 'Restart':
-                            pass
+                            game.reset()
+                            status = 1
                         # в зависимости от кнопки какие то действия
 
 
@@ -184,6 +187,8 @@ class Game:
 
     def stop(self):
         self.is_running = False
+        global status
+        status = 2
 
     def render(self):
         self.background_group.draw(screen)
@@ -236,40 +241,42 @@ if __name__ == '__main__':
     CREATE_OBSTACLE_EVENT = pygame.USEREVENT + 1
     pygame.time.set_timer(CREATE_OBSTACLE_EVENT, 1200)
 
-    start_menu = Menu([[(100, 100), (300, 100), 'black', 'grey',
-                        'Start Game', 'white', 'red', None],
-                       [(100, 280), (300, 100), 'black', 'grey',
-                        'Quit', 'white', 'red', None]]
+    start_menu = Menu([[(100, 100), (300, 100), 'grey', 'grey',
+                        'Start Game', 'red', 'red', None],
+                       [(100, 280), (300, 100), 'grey', 'grey',
+                        'Quit', 'red', 'red', None]]
                       )
     pause = Menu([[(40, 20), (60, 30), 'black', 'grey',
                    'Pause', 'white', 'red', None]])
-    pause_menu = Menu([[(150, 100), (200, 80), 'black', 'grey',
-                        'Continue', 'white', 'red', None],
-                       [(150, 200), (200, 80), 'black', 'grey',
-                        'Restart', 'white', 'red', None],
-                       [(150, 300), (200, 80), 'black', 'grey',
-                        'Main Menu', 'white', 'red', None]])
-
+    pause_menu = Menu([[(100, 100), (300, 100), 'grey', 'grey',
+                        'Restart', 'red', 'red', None],
+                       [(100, 280), (300, 100), 'grey', 'grey',
+                        'Main Menu', 'red', 'red', None]])
+    CHANGE_STATUS_TO_1 = pygame.event.Event(pygame.USEREVENT)
     status = 0
     while running:
+        events = pygame.event.get()
         if status == 0:
-            start_menu.menu(screen)
-
-
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                running = False
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                if event.button == 1:
-                    game.click()
-                if event.button == 2:  # Сделал функции сброса и остановки
-                    game.reset()  # Работают пока на кнопки мыши,
-                if event.button == 3:  # надо сделать чтобы экран вылазил
-                    game.stop()  # и там по кнопкам это настроить
-            if event.type == pygame.MOUSEWHEEL:
-                game.add_obstacle()
-            if event.type == CREATE_OBSTACLE_EVENT:
-                game.add_obstacle()
+            start_menu.menu(screen, events)
+        if status == 1:
+            pause.menu(screen, events)
+            game.is_running = True
+            for event in events:
+                if event.type == pygame.QUIT:
+                    running = False
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    if event.button == 1:
+                        game.click()
+                    if event.button == 2:  # Сделал функции сброса и остановки
+                        game.reset()  # Работают пока на кнопки мыши,
+                    if event.button == 3:  # надо сделать чтобы экран вылазил
+                        game.stop()  # и там по кнопкам это настроить
+                if event.type == pygame.MOUSEWHEEL:
+                    game.add_obstacle()
+                if event.type == CREATE_OBSTACLE_EVENT:
+                    game.add_obstacle()
+        if status == 2:
+            pause_menu.menu(screen, events)
         game.update()
         pygame.display.flip()
         clock.tick(30)
