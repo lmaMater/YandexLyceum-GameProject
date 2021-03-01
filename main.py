@@ -51,15 +51,23 @@ class Menu:
             pos = pygame.mouse.get_pos()
             for index, btn in enumerate(self.buttons):
                 n = -1
-                if pos[0] >= btn[0][0] and pos[1] >= btn[0][1] \
-                        and pos[0] <= btn[0][0] + btn[1][0] \
-                        and pos[1] <= btn[0][1] + btn[1][1]:
+                if pos[0] >= btn[0][0] and pos[1] >= btn[0][1] and \
+                        pos[0] <= btn[0][0] + btn[1][0] and \
+                        pos[1] <= btn[0][1] + btn[1][1]:
                     n = index
                 self.render(source, n)
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     sys.exit()
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    for index, btn in enumerate(self.buttons):
+                        n = -1
+                        if pos[0] >= btn[0][0] and pos[1] >= btn[0][1] \
+                                and pos[0] <= btn[0][0] + btn[1][0] \
+                                and pos[1] <= btn[0][1] + btn[1][1]:
+                            n = index
+                            # в зависимости от кнопки какие то действия
             pygame.display.flip()
 
 
