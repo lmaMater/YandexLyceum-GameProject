@@ -3,7 +3,6 @@ import pygame.freetype
 import os
 import sys
 from random import randint
-from copy import deepcopy
 
 
 def load_image(name, colorkey=None):
