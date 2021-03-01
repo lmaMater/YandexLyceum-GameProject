@@ -16,6 +16,53 @@ def load_image(name, colorkey=None):
     return image
 
 
+class Button:
+    def __init__(self, coords, size, color, active_color,
+                 text, text_color, text_active_color, font=None):
+        pass
+
+
+class Menu:
+    def __init__(self, buttons):
+        self.buttons = buttons
+
+    def render(self, source, n=-1):
+        for index, btn in enumerate(self.buttons):
+            if index == n:
+                color = btn[3]
+                text_color = btn[6]
+            else:
+                color = btn[2]
+                text_color = btn[5]
+            font = pygame.font.Font(btn[7], 30)
+            text = font.render(btn[4], True, text_color)
+            text_w = text.get_width()
+            text_h = text.get_height()
+            text_x = btn[1][0] // 2 - text_w // 2
+            text_y = btn[1][1] // 2 - text_h // 2
+
+            pygame.draw.rect(source, color, (btn[0] + btn[1]))
+            source.blit(text, (text_x + btn[0][0], text_y + btn[0][1]))
+        # pygame.display.flip()
+
+    def menu(self, source):
+        process = True
+        while process:
+            pos = pygame.mouse.get_pos()
+            for index, btn in enumerate(self.buttons):
+                n = -1
+                if pos[0] >= btn[0][0] and pos[1] >= btn[0][1] \
+                        and pos[0] <= btn[0][0] + btn[1][0] \
+                        and pos[1] <= btn[0][1] + btn[1][1]:
+                    n = index
+                self.render(source, n)
+
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    sys.exit()
+            pygame.display.flip()
+
+
 class Player(pygame.sprite.Sprite):
     image = load_image("ufo.png")
 
@@ -162,17 +209,25 @@ if __name__ == '__main__':
     game.render()
     CREATE_OBSTACLE_EVENT = pygame.USEREVENT + 1
     pygame.time.set_timer(CREATE_OBSTACLE_EVENT, 1200)
+
+    start_menu = Menu([[(100, 100), (300, 100), 'black', 'grey',
+                        'Start Game', 'white', 'red', None],
+                       [(100, 280), (300, 100), 'black', 'grey',
+                        'Quit', 'white', 'red', None]]
+                      )
     while running:
+        start_menu.menu(screen)
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1:
                     game.click()
-                if event.button == 2:   # Сделал функции сброса и остановки
-                    game.reset()        # Работают пока на кнопки мыши,
-                if event.button == 3:   # надо сделать чтобы экран вылазил
-                    game.stop()         # и там по кнопкам это настроить
+                if event.button == 2:  # Сделал функции сброса и остановки
+                    game.reset()  # Работают пока на кнопки мыши,
+                if event.button == 3:  # надо сделать чтобы экран вылазил
+                    game.stop()  # и там по кнопкам это настроить
             if event.type == pygame.MOUSEWHEEL:
                 game.add_obstacle()
             if event.type == CREATE_OBSTACLE_EVENT:
