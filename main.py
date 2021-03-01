@@ -16,6 +16,14 @@ def load_image(name, colorkey=None):
     return image
 
 
+def cursor_on(index, btn, pos):
+    if pos[0] >= btn[0][0] and pos[1] >= btn[0][1] and \
+            pos[0] <= btn[0][0] + btn[1][0] and \
+            pos[1] <= btn[0][1] + btn[1][1]:
+        return index, btn[4]
+    return None, None
+
+
 class Button:
     def __init__(self, coords, size, color, active_color,
                  text, text_color, text_active_color, font=None):
@@ -43,32 +51,34 @@ class Menu:
 
             pygame.draw.rect(source, color, (btn[0] + btn[1]))
             source.blit(text, (text_x + btn[0][0], text_y + btn[0][1]))
-        # pygame.display.flip()
 
     def menu(self, source):
-        process = True
-        while process:
-            pos = pygame.mouse.get_pos()
-            for index, btn in enumerate(self.buttons):
-                n = -1
-                if pos[0] >= btn[0][0] and pos[1] >= btn[0][1] and \
-                        pos[0] <= btn[0][0] + btn[1][0] and \
-                        pos[1] <= btn[0][1] + btn[1][1]:
-                    n = index
-                self.render(source, n)
+        pos = pygame.mouse.get_pos()
+        for index, btn in enumerate(self.buttons):
+            n = cursor_on(index, btn, pos)[0]
+            self.render(source, n)
 
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    sys.exit()
-                if event.type == pygame.MOUSEBUTTONDOWN:
-                    for index, btn in enumerate(self.buttons):
-                        n = -1
-                        if pos[0] >= btn[0][0] and pos[1] >= btn[0][1] \
-                                and pos[0] <= btn[0][0] + btn[1][0] \
-                                and pos[1] <= btn[0][1] + btn[1][1]:
-                            n = index
-                            # в зависимости от кнопки какие то действия
-            pygame.display.flip()
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                sys.exit()
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                for index, btn in enumerate(self.buttons):
+                    n = cursor_on(index, btn, pos)[1]
+                    print(n)
+                    if n:
+                        if n == 'Quit':
+                            sys.exit()
+                        if n == 'Start Game':
+                            pass
+                        if n == 'Main Menu':
+                            pass
+                        if n == 'Pause':
+                            pass
+                        if n == 'Continue':
+                            pass
+                        if n == 'Restart':
+                            pass
+                        # в зависимости от кнопки какие то действия
 
 
 class Player(pygame.sprite.Sprite):
@@ -180,8 +190,8 @@ class Game:
         self.player_group.draw(screen)
         self.obstacles_group.draw(screen)
         textsurface = pygame.font.SysFont('calibri', 25, bold=True).render(f'SCORE: {self.score}',
-                                                                True,
-                                                                (204, 204, 204))
+                                                                           True,
+                                                                           (204, 204, 204))
         pygame.Surface.blit(screen, textsurface, (300, 10))
 
     def click(self):
@@ -231,8 +241,20 @@ if __name__ == '__main__':
                        [(100, 280), (300, 100), 'black', 'grey',
                         'Quit', 'white', 'red', None]]
                       )
+    pause = Menu([[(40, 20), (60, 30), 'black', 'grey',
+                   'Pause', 'white', 'red', None]])
+    pause_menu = Menu([[(150, 100), (200, 80), 'black', 'grey',
+                        'Continue', 'white', 'red', None],
+                       [(150, 200), (200, 80), 'black', 'grey',
+                        'Restart', 'white', 'red', None],
+                       [(150, 300), (200, 80), 'black', 'grey',
+                        'Main Menu', 'white', 'red', None]])
+
+    status = 0
     while running:
-        start_menu.menu(screen)
+        if status == 0:
+            start_menu.menu(screen)
+
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
