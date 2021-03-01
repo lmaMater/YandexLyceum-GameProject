@@ -16,9 +16,8 @@ def load_image(name, colorkey=None):
 
 
 def cursor_on(index, btn, pos):
-    if pos[0] >= btn[0][0] and pos[1] >= btn[0][1] and \
-            pos[0] <= btn[0][0] + btn[1][0] and \
-            pos[1] <= btn[0][1] + btn[1][1]:
+    if btn[0][0] <= pos[0] <= btn[0][0] + btn[1][0] and btn[0][1] <= pos[1] <= btn[0][1] + \
+                    btn[1][1]:
         return index, btn[4]
     return None, None
 
