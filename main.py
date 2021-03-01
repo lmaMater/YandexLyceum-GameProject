@@ -137,6 +137,7 @@ class Game:
         self.backgrounds = [pygame.sprite.Sprite(self.background_group),
                             pygame.sprite.Sprite(self.background_group)]
         self.init_background()
+        self.score = 0
         self.render()
 
     def reset(self):
@@ -148,6 +149,7 @@ class Game:
         self.background_group = pygame.sprite.Group()
         self.backgrounds = [pygame.sprite.Sprite(self.background_group),
                             pygame.sprite.Sprite(self.background_group)]
+        self.score = 0
         self.init_background()
 
     def init_background(self):
@@ -177,6 +179,10 @@ class Game:
         self.background_group.draw(screen)
         self.player_group.draw(screen)
         self.obstacles_group.draw(screen)
+        textsurface = pygame.font.SysFont('calibri', 25, bold=True).render(f'SCORE: {self.score}',
+                                                                True,
+                                                                (204, 204, 204))
+        pygame.Surface.blit(screen, textsurface, (300, 10))
 
     def click(self):
         self.player.velocity = -12
@@ -197,6 +203,8 @@ class Game:
                 new_obstacles.append(obstacle)
             if pygame.sprite.collide_mask(obstacle, self.player):
                 self.stop()
+            if abs(obstacle.rect.x - self.player.rect.x + 1) <= 6:
+                self.score += 1
         self.obstacles = new_obstacles.copy()
 
     def add_obstacle(self):
@@ -212,7 +220,7 @@ if __name__ == '__main__':
     pygame.display.set_caption('Cosmos')
     screen = pygame.display.set_mode((width, height), vsync=1)
     running = True
-    GAME_FONT = pygame.freetype.SysFont('calibri', 14)
+    game_font = pygame.freetype.SysFont('calibri', 14)
     game = Game(width, height)
     game.render()
     CREATE_OBSTACLE_EVENT = pygame.USEREVENT + 1
